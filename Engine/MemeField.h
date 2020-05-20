@@ -54,5 +54,7 @@ private:
 	const Vei2 offset = Vei2((Graphics::ScreenWidth - width * SpriteCodex::tileSize) / 2  , (Graphics::ScreenHeight - height * SpriteCodex::tileSize) / 2);
 	bool isMemed = false;
 	Tile field[width * height];
+	int totalMemes;
+	int memesFound = 0;
 };
 

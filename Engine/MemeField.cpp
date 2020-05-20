@@ -39,7 +39,7 @@ void MemeField::Tile::Draw(const Vei2 & screenPos, bool memed, Graphics & gfx) c
 			break;
 		}
 	}
-	else
+	else 
 	{
 		switch (state)
 		{
@@ -164,6 +164,11 @@ void MemeField::Draw(Graphics & gfx) const
 		}
 		gridPos.x = 0;
 	}
+
+	if (memesFound == totalMemes)
+	{
+		SpriteCodex::DrawWin(offset, gfx);
+	}
 }
 
 RectI MemeField::GetRect() const
@@ -173,7 +178,7 @@ RectI MemeField::GetRect() const
 
 void MemeField::OnRevealClick(const Vei2 screenPos)
 {
-	if (!isMemed)
+	if (!isMemed && memesFound != totalMemes)
 	{
 		const Vei2 gridPos = ScreenToGrid(screenPos - offset);
 		assert(gridPos.x >= 0 && gridPos.x < width && gridPos.y >= 0 && gridPos.y < height);
@@ -192,7 +197,7 @@ void MemeField::OnRevealClick(const Vei2 screenPos)
 
 void MemeField::OnFlagClick(const Vei2 screenPos)
 {
-	if (!isMemed)
+	if (!isMemed && memesFound != totalMemes)
 	{
 		const Vei2 gridPos = ScreenToGrid(screenPos - offset);
 		assert(gridPos.x >= 0 && gridPos.x < width && gridPos.y >= 0 && gridPos.y < height);
@@ -201,6 +206,17 @@ void MemeField::OnFlagClick(const Vei2 screenPos)
 		if (!tile.IsRevealed())
 		{
 			tile.ToggleFlag();
+			if (tile.HasMeme())
+			{
+				if (tile.IsFlagged())
+				{
+					memesFound++;
+				}
+				else
+				{
+					memesFound--;
+				}
+			}
 		}
 	}
 }
