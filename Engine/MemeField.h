@@ -7,6 +7,13 @@
 
 class MemeField
 {
+public:
+	enum class FieldState
+	{
+		Win,
+		Lose,
+		Memeing
+	};
 private:
 	class Tile
 	{
@@ -20,7 +27,7 @@ private:
 	public:
 		void SpawnMeme();
 		bool HasMeme() const;
-		void Draw(const Vei2& screenPos, bool memed, Graphics& gfx) const;
+		void Draw(const Vei2& screenPos, FieldState fieldState, Graphics& gfx) const;
 		void Reveal();
 		bool IsRevealed() const;
 		void ToggleFlag();
@@ -39,6 +46,8 @@ public:
 	RectI GetRect() const;
 	void OnRevealClick(const Vei2 screenPos);
 	void OnFlagClick(const Vei2 screenPos);
+	bool IsGameWon() const;
+	FieldState GetFieldState() const;
 
 private:
 	Tile& TileAt(const Vei2& gridPos);
@@ -54,7 +63,6 @@ private:
 	const Vei2 offset = Vei2((Graphics::ScreenWidth - width * SpriteCodex::tileSize) / 2  , (Graphics::ScreenHeight - height * SpriteCodex::tileSize) / 2);
 	bool isMemed = false;
 	Tile field[width * height];
-	int totalMemes;
-	int memesFound = 0;
+	FieldState state = FieldState::Memeing;
 };
 

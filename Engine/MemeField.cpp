@@ -14,9 +14,9 @@ bool MemeField::Tile::HasMeme() const
 	return hasMeme;
 }
 
-void MemeField::Tile::Draw(const Vei2 & screenPos, bool memed, Graphics & gfx) const
+void MemeField::Tile::Draw(const Vei2 & screenPos, FieldState fieldState, Graphics & gfx) const
 {
-	if (!memed)
+	if (fieldState != FieldState::Lose)
 	{
 		switch (state)
 		{
@@ -118,8 +118,6 @@ void MemeField::Tile::SetNeighborMemeCount(int memeCount)
 MemeField::MemeField(int nMemes)
 {
 	assert(nMemes > 0 && nMemes < width * height);
-	totalMemes = nMemes;
-	memesFound = 0;
 
 	std::random_device rd;
 	std::mt19937 rng(rd());
@@ -159,15 +157,10 @@ void MemeField::Draw(Graphics & gfx) const
 	{
 		while (gridPos.x < width)
 		{
-			TileAt(gridPos).Draw(offset + gridPos * SpriteCodex::tileSize, isMemed, gfx);
+			TileAt(gridPos).Draw(offset + gridPos * SpriteCodex::tileSize, state, gfx);
 			gridPos.x++;
 		}
 		gridPos.x = 0;
-	}
-
-	if (memesFound == totalMemes)
-	{
-		SpriteCodex::DrawWin(offset, gfx);
 	}
 }
 
@@ -178,7 +171,7 @@ RectI MemeField::GetRect() const
 
 void MemeField::OnRevealClick(const Vei2 screenPos)
 {
-	if (!isMemed && memesFound != totalMemes)
+	if (!isMemed && state == FieldState::Memeing)
 	{
 		const Vei2 gridPos = ScreenToGrid(screenPos - offset);
 		assert(gridPos.x >= 0 && gridPos.x < width && gridPos.y >= 0 && gridPos.y < height);
@@ -189,7 +182,7 @@ void MemeField::OnRevealClick(const Vei2 screenPos)
 			tile.Reveal();
 			if (tile.HasMeme())
 			{
-				isMemed = true;
+				state = FieldState::Lose;
 			}
 		}
 	}
@@ -197,7 +190,7 @@ void MemeField::OnRevealClick(const Vei2 screenPos)
 
 void MemeField::OnFlagClick(const Vei2 screenPos)
 {
-	if (!isMemed && memesFound != totalMemes)
+	if (!isMemed && state == FieldState::Memeing)
 	{
 		const Vei2 gridPos = ScreenToGrid(screenPos - offset);
 		assert(gridPos.x >= 0 && gridPos.x < width && gridPos.y >= 0 && gridPos.y < height);
@@ -206,19 +199,31 @@ void MemeField::OnFlagClick(const Vei2 screenPos)
 		if (!tile.IsRevealed())
 		{
 			tile.ToggleFlag();
-			if (tile.HasMeme())
+			
+			if (IsGameWon())
 			{
-				if (tile.IsFlagged())
-				{
-					memesFound++;
-				}
-				else
-				{
-					memesFound--;
-				}
+				state = FieldState::Win;
 			}
 		}
 	}
+}
+
+bool MemeField::IsGameWon() const
+{
+	for (const Tile tile : field)
+	{
+		if ((tile.HasMeme() ^ tile.IsFlagged()))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+MemeField::FieldState MemeField::GetFieldState() const
+{
+	return state;
 }
 
 MemeField::Tile & MemeField::TileAt(const Vei2 & gridPos)

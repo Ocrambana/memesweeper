@@ -64,4 +64,9 @@ void Game::UpdateModel()
 void Game::ComposeFrame()
 {
 	field.Draw(gfx);
+	if (field.GetFieldState() == MemeField::FieldState::Win)
+	{
+		RectI rect(0,Graphics::ScreenWidth-1, 0, Graphics::ScreenHeight-1);
+		SpriteCodex::DrawWin(rect.GetCenter(), gfx);
+	}
 }
